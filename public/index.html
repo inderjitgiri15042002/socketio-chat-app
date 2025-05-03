@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Socket.IO Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(to right, #ece9e6, #ffffff);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 1rem;
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      #messages > li {
+        max-width: 60%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        background-color: #f0f0f0;
+        align-self: flex-start;
+        word-wrap: break-word;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      #messages > li.self {
+        background-color: #d1e7dd;
+        align-self: flex-end;
+      }
+
+      #form {
+        background: #ffffff;
+        padding: 0.5rem;
+        display: flex;
+        border-top: 1px solid #ccc;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      #input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ccc;
+        border-radius: 2rem;
+        font-size: 1rem;
+      }
+
+      #input:focus {
+        outline: none;
+        border-color: #66afe9;
+        box-shadow: 0 0 5px rgba(102, 175, 233, 0.6);
+      }
+
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 0 1.5rem;
+        margin-left: 0.5rem;
+        border-radius: 2rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" placeholder="Type your message..." />
+      <button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const input = document.getElementById("input");
+      const form = document.getElementById("form");
+      const messages = document.getElementById("messages");
+
+      function addMessage(message, isSelf = false) {
+        const li = document.createElement("li");
+        li.textContent = message;
+        if (isSelf) li.classList.add("self");
+        messages.appendChild(li);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      socket.on("message", (message) => {
+        addMessage(message);
+      });
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+        addMessage(message, true);
+        socket.emit("user-message", message);
+        input.value = "";
+      });
+    </script>
+  </body>
+</html>
